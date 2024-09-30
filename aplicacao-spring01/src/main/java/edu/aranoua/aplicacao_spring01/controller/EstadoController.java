@@ -1,5 +1,7 @@
 package edu.aranoua.aplicacao_spring01.controller;
 
+import edu.aranoua.aplicacao_spring01.dto.EstadoInputDTO;
+import edu.aranoua.aplicacao_spring01.dto.EstadoOutputDTO;
 import edu.aranoua.aplicacao_spring01.model.Estado;
 import edu.aranoua.aplicacao_spring01.repository.EstadoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,12 +22,25 @@ public class EstadoController {
     private EstadoRepository estadoRepository;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Estado> list(){
-        return estadoRepository.findAll();
+    public ResponseEntity<List<EstadoOutputDTO>> list(){
+        List<Estado> estados = estadoRepository.findAll();
+
+        List<EstadoOutputDTO> estadosOutputDTO = new ArrayList<>();
+
+        for(Estado estado : estados){
+            estadosOutputDTO.add(new EstadoOutputDTO(estado));
+        }
+
+        if(!estadosOutputDTO.isEmpty()){
+            return new ResponseEntity<>(estadosOutputDTO, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Estado> getById(@PathVariable Long id){
+
         Optional<Estado> possivelEstado = estadoRepository.findById(id);
 
         if (possivelEstado.isPresent()){
@@ -35,17 +51,22 @@ public class EstadoController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Estado> create(@RequestBody Estado estado){
+    public ResponseEntity<EstadoOutputDTO> create(@RequestBody EstadoInputDTO estadoInputDTO){
         try {
-           Estado estadoNovo = estadoRepository.save(estado);
-           return new ResponseEntity<>(estadoNovo, HttpStatus.CREATED);
+           Estado estadoNovo = estadoInputDTO.build(estadoRepository);
+
+           Estado estadoNoBD = estadoRepository.save(estadoNovo);
+
+           EstadoOutputDTO estadoOutputDTO = new EstadoOutputDTO(estadoNoBD);
+
+           return new ResponseEntity<>(estadoOutputDTO, HttpStatus.CREATED);
         }catch (Exception e){
-            return new ResponseEntity<>(null,HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PutMapping(value ="/{id}" ,consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Estado> update(@PathVariable Long id,@RequestBody Estado estado){
+    public ResponseEntity<EstadoOutputDTO> update(@PathVariable Long id,@RequestBody EstadoInputDTO estadoInputDTO){
 
         try {
 
@@ -53,10 +74,11 @@ public class EstadoController {
 
             if (possivelEstado.isPresent()) {
                 Estado estadoEncontrado = possivelEstado.get();
-                estadoEncontrado.setNome(estado.getNome());
-                estadoEncontrado.setSigla(estado.getSigla());
+                estadoEncontrado.setNome(estadoInputDTO.getNome());
+                estadoEncontrado.setSigla(estadoInputDTO.getSigla());
                 Estado estadoAtualizado = estadoRepository.save(estadoEncontrado);
-                return new ResponseEntity<>(estadoAtualizado, HttpStatus.OK);
+                EstadoOutputDTO estadoOutputDTO = new EstadoOutputDTO(estadoEncontrado);
+                return new ResponseEntity<>(estadoOutputDTO, HttpStatus.OK);
 
             } else {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
