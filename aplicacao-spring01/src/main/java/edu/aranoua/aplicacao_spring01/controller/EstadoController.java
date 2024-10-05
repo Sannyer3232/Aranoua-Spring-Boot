@@ -23,6 +23,7 @@ public class EstadoController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<EstadoOutputDTO>> list(){
+
         List<Estado> estados = estadoRepository.findAll();
 
         List<EstadoOutputDTO> estadosOutputDTO = new ArrayList<>();
@@ -53,7 +54,7 @@ public class EstadoController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EstadoOutputDTO> create(@RequestBody EstadoInputDTO estadoInputDTO){
         try {
-           Estado estadoNovo = estadoInputDTO.build(estadoRepository);
+           Estado estadoNovo = estadoInputDTO.build();
 
            Estado estadoNoBD = estadoRepository.save(estadoNovo);
 

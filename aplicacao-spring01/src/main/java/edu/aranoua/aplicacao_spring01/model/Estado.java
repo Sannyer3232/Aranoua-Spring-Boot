@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Entity(name = "estado")
 public class Estado {
 
@@ -25,11 +26,6 @@ public class Estado {
         this.id = id;
         this.nome = nome;
         this.sigla = sigla;
-    }
-
-    public Estado(String sigla, String nome) {
-        this.sigla = sigla;
-        this.nome = nome;
     }
 
     public Long getId() {
