@@ -2,11 +2,13 @@ package edu.aranoua.aplicacao_spring01.dto;
 
 import edu.aranoua.aplicacao_spring01.model.Estado;
 import edu.aranoua.aplicacao_spring01.repository.EstadoRepository;
+import edu.aranoua.aplicacao_spring01.repository.PaisRepository;
 
 public class EstadoInputDTO {
 
     private String nome;
     private String sigla;
+    private String pais;
 
     public EstadoInputDTO() {}
 
@@ -26,10 +28,19 @@ public class EstadoInputDTO {
         this.sigla = sigla;
     }
 
-    public Estado build(){
+    public String getPais() {
+        return pais;
+    }
+
+    public void setPais(String pais) {
+        this.pais = pais;
+    }
+
+    public Estado build(PaisRepository  paisRepository){
         Estado estado = new Estado();
         estado.setNome(this.nome);
         estado.setSigla(this.sigla);
+        estado.setPais(paisRepository.findByNome(this.pais));
         return estado;
     }
 

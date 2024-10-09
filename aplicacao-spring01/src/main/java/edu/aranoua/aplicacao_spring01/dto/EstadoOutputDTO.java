@@ -7,11 +7,13 @@ public class EstadoOutputDTO {
     private Long id;
     private String nome;
     private String sigla;
+    private String pais;
 
     public EstadoOutputDTO(Estado estado) {
         this.id = estado.getId();
         this.nome = estado.getNome();
         this.sigla = estado.getSigla();
+        this.pais = estado.getPais().getNome();
     }
 
     public Long getId() {
@@ -38,5 +40,11 @@ public class EstadoOutputDTO {
         this.sigla = sigla;
     }
 
+    public String getPais() {
+        return pais;
+    }
 
+    public void setPais(String pais) {
+        this.pais = pais;
+    }
 }

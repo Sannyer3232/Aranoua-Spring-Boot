@@ -4,6 +4,7 @@ import edu.aranoua.aplicacao_spring01.dto.EstadoInputDTO;
 import edu.aranoua.aplicacao_spring01.dto.EstadoOutputDTO;
 import edu.aranoua.aplicacao_spring01.model.Estado;
 import edu.aranoua.aplicacao_spring01.repository.EstadoRepository;
+import edu.aranoua.aplicacao_spring01.repository.PaisRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,6 +21,8 @@ public class EstadoController {
 
     @Autowired
     private EstadoRepository estadoRepository;
+    @Autowired
+    private PaisRepository paisRepository;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<EstadoOutputDTO>> list(){
@@ -54,7 +57,7 @@ public class EstadoController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EstadoOutputDTO> create(@RequestBody EstadoInputDTO estadoInputDTO){
         try {
-           Estado estadoNovo = estadoInputDTO.build();
+           Estado estadoNovo = estadoInputDTO.build(paisRepository);
 
            Estado estadoNoBD = estadoRepository.save(estadoNovo);
 
@@ -77,6 +80,7 @@ public class EstadoController {
                 Estado estadoEncontrado = possivelEstado.get();
                 estadoEncontrado.setNome(estadoInputDTO.getNome());
                 estadoEncontrado.setSigla(estadoInputDTO.getSigla());
+                estadoEncontrado.setPais(paisRepository.findByNome(estadoInputDTO.getPais()));
                 Estado estadoAtualizado = estadoRepository.save(estadoEncontrado);
                 EstadoOutputDTO estadoOutputDTO = new EstadoOutputDTO(estadoEncontrado);
                 return new ResponseEntity<>(estadoOutputDTO, HttpStatus.OK);

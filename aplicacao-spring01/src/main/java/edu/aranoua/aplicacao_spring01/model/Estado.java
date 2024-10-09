@@ -17,10 +17,19 @@ public class Estado {
     @Column(name = "estadosigla", nullable = false)
     private String sigla;
 
+    @ManyToOne
+    private Pais pais;
 
     @OneToMany(mappedBy = "estado")
     private List<Cidade> cidades = new ArrayList<Cidade>();
     public Estado() {}
+
+    public Estado(Long id, String nome, String sigla, Pais pais) {
+        this.id = id;
+        this.nome = nome;
+        this.sigla = sigla;
+        this.pais = pais;
+    }
 
     public Estado(Long id, String nome, String sigla) {
         this.id = id;
@@ -65,6 +74,14 @@ public class Estado {
             this.cidades.add(cidade);
             cidade.setEstado(this);
         }
+    }
+
+    public Pais getPais() {
+        return pais;
+    }
+
+    public void setPais(Pais pais) {
+        this.pais = pais;
     }
 
     @Override
