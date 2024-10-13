@@ -1,21 +1,15 @@
 package edu.aranoua.aplicacao_spring01.controller;
 
-import edu.aranoua.aplicacao_spring01.dto.EstadoInputDTO;
-import edu.aranoua.aplicacao_spring01.dto.EstadoOutputDTO;
 import edu.aranoua.aplicacao_spring01.dto.PaisInputDTO;
-import edu.aranoua.aplicacao_spring01.dto.PaisOutDTO;
-import edu.aranoua.aplicacao_spring01.model.Estado;
-import edu.aranoua.aplicacao_spring01.model.Pais;
-import edu.aranoua.aplicacao_spring01.repository.PaisRepository;
+import edu.aranoua.aplicacao_spring01.dto.PaisOutputDTO;
+import edu.aranoua.aplicacao_spring01.service.PaisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 
 @RestController
@@ -23,18 +17,14 @@ import java.util.Optional;
 public class PaisController {
 
     @Autowired
-    private PaisRepository paisRepository;
+    private PaisService paisService;
+
+
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<PaisOutDTO>> list(){
+    public ResponseEntity<List<PaisOutputDTO>> list(){
 
-        List<Pais> paises = paisRepository.findAll();
-
-        List<PaisOutDTO> paisesOutputDTO = new ArrayList<>();
-
-        for (Pais pais : paises) {
-            paisesOutputDTO.add(new PaisOutDTO(pais));
-        }
+        List<PaisOutputDTO> paisesOutputDTO = paisService.list();
 
         if(!paisesOutputDTO.isEmpty()){
             return new ResponseEntity<>(paisesOutputDTO, HttpStatus.OK);
@@ -42,63 +32,53 @@ public class PaisController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
     }
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PaisOutputDTO> getById(@PathVariable Long id){
+
+        PaisOutputDTO paisOutputDTO = paisService.getById(id);
+
+        if(paisOutputDTO != null){
+            return new ResponseEntity<>(paisOutputDTO, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PaisOutDTO> create(@RequestBody PaisInputDTO paisInputDTO){
-        try{
-            Pais paisNovo = paisInputDTO.build();
-            Pais paisNoBD = paisRepository.save(paisNovo);
-            PaisOutDTO paisOutDTO = new PaisOutDTO(paisNovo);
-            return new ResponseEntity<>(paisOutDTO, HttpStatus.CREATED);
-        }catch (Exception e){
+    public ResponseEntity<PaisOutputDTO> create(@RequestBody PaisInputDTO paisInputDTO){
+
+        PaisOutputDTO paisOutputDTO = paisService.create(paisInputDTO);
+        if(paisOutputDTO != null){
+
+            return new ResponseEntity<>(paisOutputDTO, HttpStatus.CREATED);
+        }else{
+
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @GetMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Pais> getById(@PathVariable Long id){
 
-        Optional<Pais> possivelPais = paisRepository.findById(id);
-
-        if(possivelPais.isPresent()){
-            return new ResponseEntity<>(possivelPais.get(), HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-    }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PaisOutDTO> update(@PathVariable Long id, @RequestBody PaisInputDTO paisInputDTO){
-        try {
-            Optional<Pais> possivelPais = paisRepository.findById(id);
-            if (possivelPais.isPresent()) {
-                Pais paisEncontrado = possivelPais.get();
-                paisEncontrado.setNome(paisInputDTO.getNome());
-                paisEncontrado.setSigla(paisInputDTO.getSigla());
-                Pais paisAtualizado = paisRepository.save(paisEncontrado);
-                PaisOutDTO paisOutDTO = new PaisOutDTO(paisEncontrado);
-                return new ResponseEntity<>(paisOutDTO, HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-        }catch(Exception e){
-                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-            }
+    public ResponseEntity<PaisOutputDTO> update(@PathVariable Long id, @RequestBody PaisInputDTO paisInputDTO){
+
+        PaisOutputDTO paisAtualizado = paisService.update(id, paisInputDTO);
+        if(paisAtualizado != null){
+            return new ResponseEntity<>(paisAtualizado, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id){
-        try{
-            Optional<Pais> possivelPais = paisRepository.findById(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
 
-            if(possivelPais.isPresent()){
-                paisRepository.delete(possivelPais.get());
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }else{
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-        }catch (Exception e){
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        PaisOutputDTO paisOutputDTO = paisService.getById(id);
+        if(paisOutputDTO != null){
+            paisService.delete(id);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 }

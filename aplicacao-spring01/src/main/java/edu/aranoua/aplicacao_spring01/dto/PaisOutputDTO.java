@@ -2,16 +2,16 @@ package edu.aranoua.aplicacao_spring01.dto;
 
 import edu.aranoua.aplicacao_spring01.model.Pais;
 
-public class PaisOutDTO {
+public class PaisOutputDTO {
     private Long id;
     private String nome;
     private String sigla;
 
-    public PaisOutDTO() {
+    public PaisOutputDTO() {
 
     }
 
-    public PaisOutDTO(Pais pais) {
+    public PaisOutputDTO(Pais pais) {
         this.id = pais.getId();
         this.sigla = pais.getSigla();
         this.nome = pais.getNome();

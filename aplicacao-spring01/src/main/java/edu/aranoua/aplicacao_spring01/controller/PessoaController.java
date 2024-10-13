@@ -1,13 +1,11 @@
 package edu.aranoua.aplicacao_spring01.controller;
 
-import edu.aranoua.aplicacao_spring01.dto.CidadeInputDTO;
-import edu.aranoua.aplicacao_spring01.dto.CidadeOutputDTO;
-import edu.aranoua.aplicacao_spring01.dto.PessoaInputDTO;
-import edu.aranoua.aplicacao_spring01.dto.PessoaOutputDTO;
+import edu.aranoua.aplicacao_spring01.dto.*;
 import edu.aranoua.aplicacao_spring01.model.Cidade;
 import edu.aranoua.aplicacao_spring01.model.Pessoa;
 import edu.aranoua.aplicacao_spring01.repository.CidadeRepository;
 import edu.aranoua.aplicacao_spring01.repository.PessoaRepository;
+import edu.aranoua.aplicacao_spring01.service.PessoaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,20 +21,13 @@ import java.util.Optional;
 public class PessoaController {
 
     @Autowired
-    PessoaRepository pessoaRepository;
-    @Autowired
-    CidadeRepository cidadeRepository;
+    PessoaService pessoaService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<PessoaOutputDTO>> list(){
 
-        List<Pessoa> pessoas = pessoaRepository.findAll();
+        List<PessoaOutputDTO> pessoasOutputDTO = pessoaService.list();
 
-        List<PessoaOutputDTO> pessoasOutputDTO = new ArrayList<>();
-
-        for(Pessoa pessoa: pessoas){
-            pessoasOutputDTO.add(new PessoaOutputDTO(pessoa));
-        }
 
         if(!pessoasOutputDTO.isEmpty()){
             return new ResponseEntity<>(pessoasOutputDTO, HttpStatus.OK);
@@ -45,20 +36,26 @@ public class PessoaController {
         }
 
     }
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PessoaOutputDTO> getById(@PathVariable Long id){
+
+        PessoaOutputDTO possivelPessoaOutputDTO = pessoaService.getById(id);
+
+        if (possivelPessoaOutputDTO != null){
+            return new ResponseEntity<>(possivelPessoaOutputDTO, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PessoaOutputDTO> create(@RequestBody PessoaInputDTO pessoaInputDTO){
 
-        try {
-            Pessoa pessoa = pessoaInputDTO.build(cidadeRepository);
-
-            Pessoa pessoaNoBD = pessoaRepository.save(pessoa);
-
-            PessoaOutputDTO pessoaOutputDTO = new PessoaOutputDTO(pessoaNoBD);
-
-            return new ResponseEntity<>(pessoaOutputDTO, HttpStatus.CREATED);
-
-        }catch (Exception e){
+        PessoaOutputDTO pessoaSalvaOutputDTO = pessoaService.create(pessoaInputDTO);
+        if(pessoaSalvaOutputDTO != null){
+            return new ResponseEntity<>(pessoaSalvaOutputDTO, HttpStatus.CREATED);
+        }else{
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -66,32 +63,31 @@ public class PessoaController {
     @PutMapping(value ="/{id}" ,consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<PessoaOutputDTO> update(@PathVariable Long id, @RequestBody PessoaInputDTO pessoaInputDTO){
 
-        try {
+        PessoaOutputDTO pessoaAtualizadoOutDTO = pessoaService.update(id,pessoaInputDTO);
 
-            Optional<Pessoa> possivelpessoa = pessoaRepository.findById(id);
+        if(pessoaAtualizadoOutDTO != null){
+            return new ResponseEntity<>(pessoaAtualizadoOutDTO, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 
-            if (possivelpessoa.isPresent()) {
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id){
 
-                Pessoa pessoaEncontrada = possivelpessoa.get();
+        PessoaOutputDTO possivelPessoaOutputDTO = pessoaService.getById(id);
 
-                pessoaEncontrada.setNome(pessoaInputDTO.getNome());
-                pessoaEncontrada.setCpf(pessoaInputDTO.getCpf());
-                pessoaEncontrada.setIdade(pessoaInputDTO.getIdade());
-                pessoaEncontrada.setCidade(cidadeRepository.findByNome(pessoaInputDTO.getCidade()));
+        if(possivelPessoaOutputDTO != null) {
 
+            pessoaService.delete(possivelPessoaOutputDTO.getId());
 
-                Pessoa pessoaAtualizada = pessoaRepository.save(pessoaEncontrada);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 
-                PessoaOutputDTO pessoaOutputDTO = new PessoaOutputDTO(pessoaAtualizada);
+        }else{
 
-                return new ResponseEntity<>(pessoaOutputDTO, HttpStatus.OK);
-
-            } else {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-        }catch(Exception e){
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
     }
+
 }

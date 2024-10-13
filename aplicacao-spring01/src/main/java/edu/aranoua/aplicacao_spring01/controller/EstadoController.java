@@ -1,10 +1,12 @@
 package edu.aranoua.aplicacao_spring01.controller;
 
+import edu.aranoua.aplicacao_spring01.dto.CidadeOutputDTO;
 import edu.aranoua.aplicacao_spring01.dto.EstadoInputDTO;
 import edu.aranoua.aplicacao_spring01.dto.EstadoOutputDTO;
 import edu.aranoua.aplicacao_spring01.model.Estado;
 import edu.aranoua.aplicacao_spring01.repository.EstadoRepository;
 import edu.aranoua.aplicacao_spring01.repository.PaisRepository;
+import edu.aranoua.aplicacao_spring01.service.EstadoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,20 +22,12 @@ import java.util.Optional;
 public class EstadoController {
 
     @Autowired
-    private EstadoRepository estadoRepository;
-    @Autowired
-    private PaisRepository paisRepository;
+    private EstadoService estadoService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<EstadoOutputDTO>> list(){
 
-        List<Estado> estados = estadoRepository.findAll();
-
-        List<EstadoOutputDTO> estadosOutputDTO = new ArrayList<>();
-
-        for(Estado estado : estados){
-            estadosOutputDTO.add(new EstadoOutputDTO(estado));
-        }
+        List<EstadoOutputDTO> estadosOutputDTO = estadoService.list();
 
         if(!estadosOutputDTO.isEmpty()){
             return new ResponseEntity<>(estadosOutputDTO, HttpStatus.OK);
@@ -43,12 +37,12 @@ public class EstadoController {
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Estado> getById(@PathVariable Long id){
+    public ResponseEntity<EstadoOutputDTO> getById(@PathVariable Long id){
 
-        Optional<Estado> possivelEstado = estadoRepository.findById(id);
+        EstadoOutputDTO possivelEstado = estadoService.getById(id);
 
-        if (possivelEstado.isPresent()){
-            return new ResponseEntity<>(possivelEstado.get(), HttpStatus.OK);
+        if (possivelEstado != null){
+            return new ResponseEntity<>(possivelEstado, HttpStatus.OK);
         }else{
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -56,40 +50,42 @@ public class EstadoController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EstadoOutputDTO> create(@RequestBody EstadoInputDTO estadoInputDTO){
-        try {
-           Estado estadoNovo = estadoInputDTO.build(paisRepository);
 
-           Estado estadoNoBD = estadoRepository.save(estadoNovo);
+           EstadoOutputDTO estadoSalvoOutputDTO = estadoService.create(estadoInputDTO);
 
-           EstadoOutputDTO estadoOutputDTO = new EstadoOutputDTO(estadoNoBD);
-
-           return new ResponseEntity<>(estadoOutputDTO, HttpStatus.CREATED);
-        }catch (Exception e){
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+       if(estadoSalvoOutputDTO != null){
+           return new ResponseEntity<>(estadoSalvoOutputDTO, HttpStatus.CREATED);
+       }else{
+           return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+       }
     }
 
     @PutMapping(value ="/{id}" ,consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EstadoOutputDTO> update(@PathVariable Long id,@RequestBody EstadoInputDTO estadoInputDTO){
 
-        try {
+        EstadoOutputDTO estadoAtualizadoOutputDTO = estadoService.update(id, estadoInputDTO);
 
-            Optional<Estado> possivelEstado = estadoRepository.findById(id);
+        if(estadoAtualizadoOutputDTO != null){
+            return new ResponseEntity<>(estadoAtualizadoOutputDTO, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 
-            if (possivelEstado.isPresent()) {
-                Estado estadoEncontrado = possivelEstado.get();
-                estadoEncontrado.setNome(estadoInputDTO.getNome());
-                estadoEncontrado.setSigla(estadoInputDTO.getSigla());
-                estadoEncontrado.setPais(paisRepository.findByNome(estadoInputDTO.getPais()));
-                Estado estadoAtualizado = estadoRepository.save(estadoEncontrado);
-                EstadoOutputDTO estadoOutputDTO = new EstadoOutputDTO(estadoEncontrado);
-                return new ResponseEntity<>(estadoOutputDTO, HttpStatus.OK);
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id){
 
-            } else {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-        }catch(Exception e){
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        EstadoOutputDTO possivelEstado = estadoService.getById(id);
+
+        if(possivelEstado != null) {
+
+            estadoService.delete(possivelEstado.getId());
+
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+
+        }else{
+
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
     }

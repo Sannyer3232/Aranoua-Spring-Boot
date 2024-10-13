@@ -2,45 +2,27 @@ package edu.aranoua.aplicacao_spring01.controller;
 
 import edu.aranoua.aplicacao_spring01.dto.CidadeInputDTO;
 import edu.aranoua.aplicacao_spring01.dto.CidadeOutputDTO;
-import edu.aranoua.aplicacao_spring01.dto.EstadoInputDTO;
-import edu.aranoua.aplicacao_spring01.dto.EstadoOutputDTO;
-import edu.aranoua.aplicacao_spring01.model.Cidade;
-import edu.aranoua.aplicacao_spring01.model.Estado;
-import edu.aranoua.aplicacao_spring01.repository.CidadeRepository;
-import edu.aranoua.aplicacao_spring01.repository.EstadoRepository;
+import edu.aranoua.aplicacao_spring01.service.CidadeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 
 @RestController
 @RequestMapping("/api/cidade")
 public class CidadeController {
 
     @Autowired
-    private CidadeRepository cidadeRepository;
-    @Autowired
-    private EstadoRepository estadoRepository;
+    private CidadeService cidadeService;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<CidadeOutputDTO>> List(){
 
-        List<Cidade> cidades = cidadeRepository.findAll();
-
-        for(Cidade cidade : cidades){
-            System.out.println(cidade);
-        }
-        List<CidadeOutputDTO> cidadesOutputDTO = new ArrayList<>();
-
-        for (Cidade cidade : cidades) {
-            cidadesOutputDTO.add(new CidadeOutputDTO(cidade));
-        }
+        List<CidadeOutputDTO> cidadesOutputDTO = cidadeService.List();
 
         if(!cidadesOutputDTO.isEmpty()) {
             return new ResponseEntity<>(cidadesOutputDTO, HttpStatus.OK);
@@ -50,22 +32,28 @@ public class CidadeController {
 
     }
 
+    @GetMapping(value = "/{id}" ,produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CidadeOutputDTO> getById(@PathVariable Long id){
+
+       CidadeOutputDTO cidadeOutputDTO = cidadeService.findById(id);
+
+        if(cidadeOutputDTO != null) {
+            return new ResponseEntity<>(cidadeOutputDTO, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+    }
+
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CidadeOutputDTO> create(@RequestBody CidadeInputDTO cidadeInputDTO){
 
-        try {
+        CidadeOutputDTO cidadeNoBD = cidadeService.create(cidadeInputDTO);
 
-            Cidade cidade = cidadeInputDTO.build(estadoRepository);
-
-            Cidade cidadeNoBD = cidadeRepository.save(cidade);
-
-            CidadeOutputDTO cidadeOutputDTO = new CidadeOutputDTO(cidadeNoBD);
-
-            return new ResponseEntity<>(cidadeOutputDTO, HttpStatus.CREATED);
-        }catch (Exception e){
-
+        if(cidadeNoBD != null) {
+            return new ResponseEntity<>(cidadeNoBD, HttpStatus.CREATED);
+        }else{
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-
         }
 
     }
@@ -73,29 +61,35 @@ public class CidadeController {
     @PutMapping(value ="/{id}" ,consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CidadeOutputDTO> update(@PathVariable Long id, @RequestBody CidadeInputDTO cidadeInputDTO){
 
-        try {
+        CidadeOutputDTO cidadeAtualizada = cidadeService.update(id, cidadeInputDTO);
 
-            Optional<Cidade> possivelCidade = cidadeRepository.findById(id);
+        if (cidadeAtualizada != null) {
 
-            if (possivelCidade.isPresent()) {
+            return new ResponseEntity<>(cidadeAtualizada, HttpStatus.OK);
 
-                Cidade cidadeEncontrada = possivelCidade.get();
+        } else {
 
-                cidadeEncontrada.setNome(cidadeInputDTO.getNome());
-                cidadeEncontrada.setEstado(estadoRepository.findByNome(cidadeInputDTO.getEstado()));
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
-                Cidade cidadeAtualizada = cidadeRepository.save(cidadeEncontrada);
+        }
+    }
 
-                CidadeOutputDTO cidadeOutputDTO = new CidadeOutputDTO(cidadeAtualizada);
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id){
 
-                return new ResponseEntity<>(cidadeOutputDTO, HttpStatus.OK);
+        CidadeOutputDTO possivelCidade = cidadeService.findById(id);
 
-            } else {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-        }catch(Exception e){
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        if(possivelCidade != null) {
+
+            cidadeService.delete(possivelCidade);
+
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+
+        }else{
+
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
     }
+
 }
