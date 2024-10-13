@@ -1,18 +1,13 @@
 package edu.aranoua.aplicacao_spring01.service;
 
-import edu.aranoua.aplicacao_spring01.dto.EstadoOutputDTO;
 import edu.aranoua.aplicacao_spring01.dto.PessoaInputDTO;
 import edu.aranoua.aplicacao_spring01.dto.PessoaOutputDTO;
-import edu.aranoua.aplicacao_spring01.model.Estado;
 import edu.aranoua.aplicacao_spring01.model.Pessoa;
 import edu.aranoua.aplicacao_spring01.repository.CidadeRepository;
 import edu.aranoua.aplicacao_spring01.repository.PessoaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
