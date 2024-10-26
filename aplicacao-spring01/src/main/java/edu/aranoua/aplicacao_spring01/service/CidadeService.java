@@ -5,7 +5,6 @@ import edu.aranoua.aplicacao_spring01.dto.CidadeOutputDTO;
 import edu.aranoua.aplicacao_spring01.model.Cidade;
 import edu.aranoua.aplicacao_spring01.repository.CidadeRepository;
 import edu.aranoua.aplicacao_spring01.repository.EstadoRepository;
-import edu.aranoua.aplicacao_spring01.repository.PaisRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;

@@ -1,21 +1,14 @@
 package edu.aranoua.aplicacao_spring01.controller;
 
-import edu.aranoua.aplicacao_spring01.dto.CidadeOutputDTO;
 import edu.aranoua.aplicacao_spring01.dto.EstadoInputDTO;
 import edu.aranoua.aplicacao_spring01.dto.EstadoOutputDTO;
-import edu.aranoua.aplicacao_spring01.model.Estado;
-import edu.aranoua.aplicacao_spring01.repository.EstadoRepository;
-import edu.aranoua.aplicacao_spring01.repository.PaisRepository;
 import edu.aranoua.aplicacao_spring01.service.EstadoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/estado")

@@ -1,20 +1,13 @@
 package edu.aranoua.aplicacao_spring01.controller;
 
 import edu.aranoua.aplicacao_spring01.dto.*;
-import edu.aranoua.aplicacao_spring01.model.Cidade;
-import edu.aranoua.aplicacao_spring01.model.Pessoa;
-import edu.aranoua.aplicacao_spring01.repository.CidadeRepository;
-import edu.aranoua.aplicacao_spring01.repository.PessoaRepository;
 import edu.aranoua.aplicacao_spring01.service.PessoaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/pessoa")
@@ -22,7 +15,7 @@ public class PessoaController {
 
     @Autowired
     PessoaService pessoaService;
-
+    @CrossOrigin(origins = "http://192.168.43.209:5500")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<PessoaOutputDTO>> list(){
 
